@@ -29,11 +29,22 @@ Created on Sun Feb  2 20:29:27 2020
 #### SUMMARY FINDINGS 
 ############################################################
 #
+## Accidents
 # 77275 records (74207 Accidents (96%), 3050 incidents (4%))
 #
-# 97% of Accidents resulted in aircraft damage
+# 97% of incidents + accidents resulted in aircraft damage
+# no incidents resulted in injuries
 # 21 % of accidents were fatal, whereas 79% were non-fatal
 #
+## Fatalities
+# most accidents fewer than 30
+# outliers at 349, (>300)
+# (second set between 175-300, third tier about 30-174)
+#
+## Serious Injuries
+# most accidents fewer than 10 serious injuries
+# outliers above 100 (two)-- three >80
+# (second set between 30 and 85,  third tier about 11-29)
 #
 #
 
@@ -117,6 +128,33 @@ cause = extract_values(data, 'probable_cause')
 #combine lists into a pandas dataframe
 json_df = pd.DataFrame(list(zip(Event_ID,narrative,cause)), columns= ["Event_ID", "Narrative", "Cause"])
 
+###########################################################
+### Data Cleaning
+###########################################################
+#
+xml_df.dtypes
+
+## CAUTION!!!!!
+## CAUTION!!!!! Assumption made here that a missing value is null 
+## CAUTION!!!!!
+
+# Turn blanks to 0 for fatalities, make int
+xml_df['TotalFatalInjuries'] = xml_df['TotalFatalInjuries'].replace({'':'0'})
+xml_df['TotalFatalInjuries'] = xml_df['TotalFatalInjuries'].astype(int)
+
+# Turn blanks to 0 for serious injuries, make int
+xml_df['TotalSeriousInjuries'] = xml_df['TotalSeriousInjuries'].replace({'':'0'})
+xml_df['TotalSeriousInjuries'] = xml_df['TotalSeriousInjuries'].astype(int)
+
+# Turn blanks to 0 for minor injuries, make int
+xml_df['TotalMinorInjuries'] = xml_df['TotalMinorInjuries'].replace({'':'0'})
+xml_df['TotalMinorInjuries'] = xml_df['TotalMinorInjuries'].astype(int)
+
+# Turn blanks to 0 for unijured, make int
+xml_df['TotalUninjured'] = xml_df['TotalUninjured'].replace({'':'0'})
+xml_df['TotalUninjured'] = xml_df['TotalUninjured'].astype(int)
+
+
 
 ###########################################################
 ### EDA of XML DataFrame
@@ -193,44 +231,8 @@ Name: RegistrationNumber, dtype: object
 ### Outcome Variables
 ###########################################################
 
-##### Continuous Variables (5) ############################
-# Total Fatal Injuries
-# Total Serious Injuries
-# Total Minor Injuries
-# Total Uninjured
-# TODO: ---add together for total passengers?
 
 
-
-
-
-''''
-    
-#count     77257
-#unique      118
-#top           0
-#freq      40363
-#Name: TotalFatalInjuries, dtype: object
-
-count     77257
-unique       41
-top           0
-freq      42955
-Name: TotalSeriousInjuries, dtype: object
-
-count     77257
-unique       63
-top           0
-freq      40342
-Name: TotalMinorInjuries, dtype: object
-
-count     77257
-unique      364
-top           1
-freq      22029
-Name: TotalUninjured, dtype: object
-
-'''
 ##### Categorical Variables () ##############################
 
 # Injury Severity
@@ -294,7 +296,6 @@ num_dam = len(subs_dam)+ len(dest_dam)+len(minor_dam) #74873
 #per_dam = num_dam/num_acc # greater than 100%, so incidents also have damage
 per_dam = num_dam/num_records #97%
 
-
 '''
 count         77257
 unique          120
@@ -307,6 +308,92 @@ unique              4
 top       Substantial
 freq            55420
 Name: AircraftDamage, dtype: object
+'''
+
+##### Continuous Variables (5) ############################
+# Total Fatal Injuries
+# Total Serious Injuries
+# Total Minor Injuries
+# Total Uninjured
+# TODO: ---add together for total passengers?
+
+#list of fatal injury types, but they are stored as strings
+print(fatal["TotalFatalInjuries"].unique())
+'''
+[  1   6   2   5   3   9   4   7  10  43  58 295  11   8 239  33  50  14
+  21  19 153 127  28  77  12  42 157 158 103  89  90 152 228  17  13  24
+  88  65 154  30  20  40  57 199 114  23 102  96  49 124 113 107 117 145
+  45 160 121  16  15 104  25  55  46 141 115  75  71 206 138  92  26 265
+ 118  44  64  18  83 143  60 131 169 217  80 229  87  52  97  35  29 125
+ 349  34  70 230 110 123 189  72  54  68 132  37  56  47  27  73 111 174
+ 144 270 156  82 256  31 135  78]
+'''
+## calculate most fatalities
+print(max(fatal["TotalFatalInjuries"].unique())) # 349
+## average number of fatalities
+print(fatal["TotalFatalInjuries"].mean()) # 2.9 ~3
+## most frequent number of fatalities
+print(fatal["TotalFatalInjuries"].mode()) # 1
+len(fatal[fatal["TotalFatalInjuries"]==1]) #7598 single fatality crashes
+
+### distribution of fatalities
+sns.stripplot(fatal["TotalFatalInjuries"])
+## most accidents fewer than 30
+## outliers at 349, >300
+## second set between 175-300
+## third tier about 30-174
+
+#list of fatal injury types, but they are stored as strings
+print(xml_df["TotalSeriousInjuries"].unique())
+'''
+[  0   3   1   2   5   4  15   6   7  12  50  11  66  17  27  22  18 111
+  20   9  59  55  23  10  25  28  43  39  14  26  13  45   8  44  21  16
+  60 106  81  47]
+'''
+## calculate most serious injuries
+print(max(xml_df["TotalSeriousInjuries"].unique())) # 111
+## average number of serious injuries
+print(xml_df[xml_df["TotalSeriousInjuries"] >0].mean()) # 1.5 (of those with serious injuries), on these fewer than 1 fatality on avg
+## most frequent number of serious injuries
+print(xml_df["TotalSeriousInjuries"][xml_df["TotalSeriousInjuries"] >0].mode()) # 1
+len(xml_df["TotalSeriousInjuries"][xml_df["TotalSeriousInjuries"]==1]) #7794 single serious injuries
+
+### distribution of fatalities
+sns.stripplot(xml_df["TotalSeriousInjuries"])
+## most accidents fewer than 10 serious injuries
+## outliers above 100 (two)
+## second set between 30 and 85
+## third tier about 11-29
+
+# TODO: Come back to look at Minor and uninjured groups as necessary,
+# but instead think about meaninful groupings for analysis outcome
+
+'''
+    
+#count     77257
+#unique      118
+#top           0
+#freq      40363
+#Name: TotalFatalInjuries, dtype: object
+
+count     77257
+unique       41
+top           0
+freq      42955
+Name: TotalSeriousInjuries, dtype: object
+
+count     77257
+unique       63
+top           0
+freq      40342
+Name: TotalMinorInjuries, dtype: object
+
+count     77257
+unique      364
+top           1
+freq      22029
+Name: TotalUninjured, dtype: object
+
 '''
 
 ###########################################################
