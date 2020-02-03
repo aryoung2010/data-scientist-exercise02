@@ -57,7 +57,18 @@ Created on Sun Feb  2 20:29:27 2020
 
 #### NEXT STEPS ###########################################
 #
-#
+#  1) Create Outcome variables to model/look at predictors
+#  2) Compare predictor variables to outcomes
+# (check for colinearity across plane variables)
+#  3) Attempt a linear or logistic model
+#  (if time)
+#  4) Map geolocations of accidents
+#  
+# Text Data
+#  1) create corpus
+#  2) remove stop words
+#  3) basic topic analysis 
+#  4) assess added value to quantitative data
 #
 
 ##########################################################
@@ -197,11 +208,11 @@ per_acc = num_acc/num_records #96%
 incidents = xml_df[xml_df["InvestigationType"]=="Incident"]
 #sns.countplot(x= incidents["InjurySeverity"]) just checking if incidents have injuries
 
-###########################################################
+############################################################
 ### Identifiers
-###########################################################
+############################################################
 
-##### Unique Flight Idetifier: EventID ######################
+########################## Unique Flight Idetifier: EventID 
 '''
 count              77257
 unique             76133
@@ -209,7 +220,7 @@ top       20101022X34140
 freq                   3
 Name: EventId, dtype: object
 '''
-##### Unique Record Idetifier: AccidentNumber ############
+#################### Unique Record Idetifier: AccidentNumber 
 '''
 count          77257
 unique         77257
@@ -217,8 +228,7 @@ top       LAX90LA318
 freq               1
 Name: AccidentNumber, dtype: object
 '''
-
-##### Unique Registration Idetifier: RegistrationNumber ######################
+########### Unique Registration Idetifier: RegistrationNumber 
 '''
 count     77257
 unique    67493
@@ -232,10 +242,19 @@ Name: RegistrationNumber, dtype: object
 ###########################################################
 
 
+##### OUTCOME VARIABLES ###################################
+##### Categorical Variables () ############################
 
-##### Categorical Variables () ##############################
+########################################### Injury Severity
+'''
+count         77257
+unique          120
+top       Non-Fatal
+freq          58499
+Name: InjurySeverity, dtype: object
+'''
 
-# Injury Severity
+#Check out distribution of types
 sns.stripplot(x= xml_df["InjurySeverity"])
 plt.title("Injury Severity")
 
@@ -277,7 +296,17 @@ sns.countplot(non_fatal["InjurySeverity"])
 per_fatal = num_fatal/num_acc #21%
 per_non_fatal = num_non_fatal/num_acc #79%
 
-# Aircraft Damage
+
+
+############################################# Aircraft Damage
+'''
+count           77257
+unique              4
+top       Substantial
+freq            55420
+Name: AircraftDamage, dtype: object
+'''
+
 print(xml_df["AircraftDamage"].unique())
 #types of damage
 #['' 'Substantial' 'Minor' 'Destroyed']
@@ -296,26 +325,25 @@ num_dam = len(subs_dam)+ len(dest_dam)+len(minor_dam) #74873
 #per_dam = num_dam/num_acc # greater than 100%, so incidents also have damage
 per_dam = num_dam/num_records #97%
 
-'''
-count         77257
-unique          120
-top       Non-Fatal
-freq          58499
-Name: InjurySeverity, dtype: object
 
-count           77257
-unique              4
-top       Substantial
-freq            55420
-Name: AircraftDamage, dtype: object
-'''
 
+
+##### OUTCOME VARIABLES ###################################
 ##### Continuous Variables (5) ############################
 # Total Fatal Injuries
 # Total Serious Injuries
 # Total Minor Injuries
 # Total Uninjured
 # TODO: ---add together for total passengers?
+
+###################################### Total Fatal Injuries 
+'''
+count     77257
+unique      118
+top           0
+freq      40363
+Name: TotalFatalInjuries, dtype: object
+'''
 
 #list of fatal injury types, but they are stored as strings
 print(fatal["TotalFatalInjuries"].unique())
@@ -350,6 +378,15 @@ print(xml_df["TotalSeriousInjuries"].unique())
   20   9  59  55  23  10  25  28  43  39  14  26  13  45   8  44  21  16
   60 106  81  47]
 '''
+
+######################################## Total Serious Injuries 
+'''
+count     77257
+unique       41
+top           0
+freq      42955
+Name: TotalSeriousInjuries, dtype: object
+'''
 ## calculate most serious injuries
 print(max(xml_df["TotalSeriousInjuries"].unique())) # 111
 ## average number of serious injuries
@@ -369,19 +406,6 @@ sns.stripplot(xml_df["TotalSeriousInjuries"])
 # but instead think about meaninful groupings for analysis outcome
 
 '''
-    
-#count     77257
-#unique      118
-#top           0
-#freq      40363
-#Name: TotalFatalInjuries, dtype: object
-
-count     77257
-unique       41
-top           0
-freq      42955
-Name: TotalSeriousInjuries, dtype: object
-
 count     77257
 unique       63
 top           0
@@ -403,6 +427,7 @@ Name: TotalUninjured, dtype: object
 
 ##### Continuous Variables (5) ############################
 # Number of Engines
+
 '''
 #count     77257
 #unique        8
@@ -422,41 +447,8 @@ freq      69198
 Name: AmateurBuilt, dtype: object
 
 '''
-##### Date Variables (2) ##############################
-# Event Date
-# TODO: convert Publication Date to date field
 
-'''
-count          77257
-unique         12180
-top       06/30/1984
-freq              25
-Name: EventDate, dtype: object
 
-count     77257
-unique     3403
-top            
-freq      13188
-Name: PublicationDate, dtype: object
-'''
-
-##### Text Variables (2) ######################################
-# Location
-# Airport Name
-
-'''
-count             77257
-unique            24702
-top       ANCHORAGE, AK
-freq                372
-Name: Location, dtype: object
-
-count     77257
-unique    22284
-top            
-freq      29926
-Name: AirportName, dtype: object
-'''
 ##### Categorical Variables (13) ##############################
 # InvestigationType
 # Airport Code
@@ -579,4 +571,37 @@ top
 freq      53505
 Name: Longitude, dtype: object
 '''
+##### Possible geospatial/ Text Variables (2) ############
+# Location
+# Airport Name
 
+'''
+count             77257
+unique            24702
+top       ANCHORAGE, AK
+freq                372
+Name: Location, dtype: object
+
+count     77257
+unique    22284
+top            
+freq      29926
+Name: AirportName, dtype: object
+'''
+##### Date Variables (2) ##############################
+# Event Date
+# TODO: convert Publication Date to date field
+
+'''
+count          77257
+unique         12180
+top       06/30/1984
+freq              25
+Name: EventDate, dtype: object
+
+count     77257
+unique     3403
+top            
+freq      13188
+Name: PublicationDate, dtype: object
+'''
