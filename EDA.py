@@ -16,20 +16,33 @@ import json
 import pandas as pd
 import xml.etree.ElementTree as et
 
-path_to_xml_file = "./Data/AviationData.xml"
-# Load xml file data
+###############################################
+### Convert XML Data file to pandas DataFrame
+###############################################
 
+## label file path
+path_to_xml_file = "./Data/AviationData.xml"
+
+# Load xml file data
 tree = et.parse(path_to_xml_file)
 data = []
 for el in tree.iterfind('./*'):
     for i in el.iterfind('*'):
         data.append(dict(i.items()))
-df = pd.DataFrame(data)
 
+##create pandas dataframe to hold data
+xml_df = pd.DataFrame(data)
+
+
+###########################################################
+### Convert JSON data from single file to pandas DataFrame
+###########################################################
+
+#load json file to object
 with open('./Data/NarrativeData_499.json') as f:
   data = json.load(f)
   
-
+#function to extract json values and create field lists
 def extract_values(obj, key):
     """Pull all values of specified key from nested JSON."""
     arr = []
@@ -50,13 +63,13 @@ def extract_values(obj, key):
     results = extract(obj, arr, key)
     return results
 
-
+#field lists for each set of json values
 Event_ID = extract_values(data, 'EventId')
 narrative = extract_values(data, 'narrative')
 cause = extract_values(data, 'probable_cause')
 
-
-df = pd.DataFrame(list(zip(Event_ID,narrative,cause)), columns= ["Event_ID", "Narrative", "Cause"])
+#combine lists into a pandas dataframe
+json_df = pd.DataFrame(list(zip(Event_ID,narrative,cause)), columns= ["Event_ID", "Narrative", "Cause"])
 
 
 
