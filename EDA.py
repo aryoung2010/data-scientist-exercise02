@@ -8,13 +8,58 @@ Created on Sun Feb  2 20:29:27 2020
 
 @author: allisonyoung
 """
+############################################################
+#### File Summary ##########################################
+############################################################
+#
+# This script takes as inputs, 
+# 1) an XML file of data downloaded
+# from the National Transportation Safety Board's database of 
+# aviation accidents.
+# (http://www.ntsb.gov/_layouts/ntsb.aviation/index.aspx)
+# 2) Data in .json format from the incident narratives
+#
+# EDA Process includes:
+#  loading datasets into pandas dataframes
+#  exploring both outcome and predictor variables 
+#
+# 
+
+############################################################
+#### SUMMARY FINDINGS 
+############################################################
+#
+# 77275 records (74207 Accidents (96%), 3050 incidents (4%))
+#
+# 97% of Accidents resulted in aircraft damage
+# 21 % of accidents were fatal, whereas 79% were non-fatal
+#
+#
+#
+
+#### QUESTIONS ############################################
+#
+# What is a flight identifier vs record idenentifier?
+#
+#
 
 
+#### NEXT STEPS ###########################################
+#
+#
+#
 
+##########################################################
+#### CODE ################################################
+##########################################################
 ## Import Files
 import json
 import pandas as pd
 import xml.etree.ElementTree as et
+import numpy as np
+import seaborn as sns #visualisation
+import matplotlib.pyplot as plt #visualisation
+sns.set(color_codes=True)
 
 
 ##########################################################
@@ -80,11 +125,43 @@ json_df = pd.DataFrame(list(zip(Event_ID,narrative,cause)), columns= ["Event_ID"
 stats = xml_df.describe()
 for i in stats:
     print(stats[i])
-    
+
+#print(xml_df.isnull().sum()) # no missing values?
+#print(xml_df == '').sum(axis=0) # no blank values?....doesnt seem right
+num_records = len(xml_df)
+
+print(xml_df.columns)
+col = list(xml_df.columns)
+'''
+Index(['EventId', 'InvestigationType', 'AccidentNumber', 'EventDate',
+       'Location', 'Country', 'Latitude', 'Longitude', 'AirportCode',
+       'AirportName', 'InjurySeverity', 'AircraftDamage', 'AircraftCategory',
+       'RegistrationNumber', 'Make', 'Model', 'AmateurBuilt',
+       'NumberOfEngines', 'EngineType', 'FARDescription', 'Schedule',
+       'PurposeOfFlight', 'AirCarrier', 'TotalFatalInjuries',
+       'TotalSeriousInjuries', 'TotalMinorInjuries', 'TotalUninjured',
+       'WeatherCondition', 'BroadPhaseOfFlight', 'ReportStatus',
+       'PublicationDate'],
+      dtype='object')
+'''
+
+
+#### Investigation Type
+sns.countplot(x= xml_df["InvestigationType"])
+plt.title("Accidents vs Incidents")
+
+num_inc = len(xml_df[xml_df["InvestigationType"]=="Incident"]) #2050 Incidents
+num_acc = len(xml_df[xml_df["InvestigationType"]=="Accident"]) #74207 Accidents
+
+#Calculate percent accidents
+per_acc = num_acc/num_records #96%
+
+incidents = xml_df[xml_df["InvestigationType"]=="Incident"]
+#sns.countplot(x= incidents["InjurySeverity"]) just checking if incidents have injuries
+
 ###########################################################
 ### Identifiers
 ###########################################################
-    
 
 ##### Unique Flight Idetifier: EventID ######################
 '''
@@ -94,7 +171,7 @@ top       20101022X34140
 freq                   3
 Name: EventId, dtype: object
 '''
-##### Unique Accident Idetifier: AccidentNumber ############
+##### Unique Record Idetifier: AccidentNumber ############
 '''
 count          77257
 unique         77257
@@ -102,6 +179,7 @@ top       LAX90LA318
 freq               1
 Name: AccidentNumber, dtype: object
 '''
+
 ##### Unique Registration Idetifier: RegistrationNumber ######################
 '''
 count     77257
@@ -110,7 +188,6 @@ top
 freq       2756
 Name: RegistrationNumber, dtype: object
 '''
-#TODO: Calculate percent accidents (98.5% of incidents are accidents)
 
 ###########################################################
 ### Outcome Variables
@@ -122,6 +199,11 @@ Name: RegistrationNumber, dtype: object
 # Total Minor Injuries
 # Total Uninjured
 # TODO: ---add together for total passengers?
+
+
+
+
+
 ''''
     
 #count     77257
@@ -150,8 +232,68 @@ Name: TotalUninjured, dtype: object
 
 '''
 ##### Categorical Variables () ##############################
+
 # Injury Severity
+sns.stripplot(x= xml_df["InjurySeverity"])
+plt.title("Injury Severity")
+
+#types of severity
+print(xml_df["InjurySeverity"].unique())
+['' 'Non-Fatal' 'Incident' 'Fatal(1)' 'Fatal(6)' 'Fatal(2)' 'Unavailable'
+ 'Fatal(5)' 'Fatal(3)' 'Fatal(9)' 'Fatal(4)' 'Fatal(7)' 'Fatal(10)'
+ 'Fatal(43)' 'Fatal(58)' 'Fatal(295)' 'Fatal(11)' 'Fatal(8)' 'Fatal(239)'
+ 'Fatal(33)' 'Fatal(50)' 'Fatal(14)' 'Fatal(21)' 'Fatal(19)' 'Fatal(153)'
+ 'Fatal(127)' 'Fatal(28)' 'Fatal(77)' 'Fatal(12)' 'Fatal(42)' 'Fatal(157)'
+ 'Fatal(158)' 'Fatal(103)' 'Fatal(89)' 'Fatal(90)' 'Fatal(152)'
+ 'Fatal(228)' 'Fatal(17)' 'Fatal(13)' 'Fatal(24)' 'Fatal(88)' 'Fatal(65)'
+ 'Fatal(154)' 'Fatal(30)' 'Fatal(20)' 'Fatal(40)' 'Fatal(57)' 'Fatal(199)'
+ 'Fatal(114)' 'Fatal(23)' 'Fatal(102)' 'Fatal(96)' 'Fatal(49)'
+ 'Fatal(124)' 'Fatal(113)' 'Fatal(107)' 'Fatal(117)' 'Fatal(145)'
+ 'Fatal(45)' 'Fatal(160)' 'Fatal(121)' 'Fatal(16)' 'Fatal(15)'
+ 'Fatal(104)' 'Fatal(25)' 'Fatal(55)' 'Fatal(46)' 'Fatal(141)'
+ 'Fatal(115)' 'Fatal(75)' 'Fatal(71)' 'Fatal(206)' 'Fatal(138)'
+ 'Fatal(92)' 'Fatal(26)' 'Fatal(265)' 'Fatal(118)' 'Fatal(44)' 'Fatal(64)'
+ 'Fatal(18)' 'Fatal(83)' 'Fatal(143)' 'Fatal(60)' 'Fatal(131)'
+ 'Fatal(169)' 'Fatal(217)' 'Fatal(80)' 'Fatal(229)' 'Fatal(87)'
+ 'Fatal(52)' 'Fatal(97)' 'Fatal(35)' 'Fatal(29)' 'Fatal(125)' 'Fatal(349)'
+ 'Fatal(34)' 'Fatal(70)' 'Fatal(230)' 'Fatal(110)' 'Fatal(123)'
+ 'Fatal(189)' 'Fatal(72)' 'Fatal(54)' 'Fatal(68)' 'Fatal(132)' 'Fatal(37)'
+ 'Fatal(56)' 'Fatal(47)' 'Fatal(27)' 'Fatal(73)' 'Fatal(111)' 'Fatal(174)'
+ 'Fatal(144)' 'Fatal(270)' 'Fatal(156)' 'Fatal(82)' 'Fatal(256)'
+ 'Fatal(31)' 'Fatal(135)' 'Fatal(78)']
+
+## divided into fatal and non fatal injuries
+non_fatal = xml_df[xml_df["InjurySeverity"].str.contains("Fatal\(")==False]
+fatal = xml_df[xml_df["InjurySeverity"].str.contains("Fatal\(")]
+
+num_fatal = len(fatal)  #15409 Fatal
+num_non_fatal= len(non_fatal) - num_inc #61848 - 2050 = 58798
+sns.countplot(non_fatal["InjurySeverity"]) 
+
+# calculated percentage of accidents as fatal or non fatal
+# TODO: turn number of fatalities into useable format, if not otherwise stored
+per_fatal = num_fatal/num_acc #21%
+per_non_fatal = num_non_fatal/num_acc #79%
+
 # Aircraft Damage
+print(xml_df["AircraftDamage"].unique())
+#types of damage
+#['' 'Substantial' 'Minor' 'Destroyed']
+#
+sns.countplot(x= xml_df["AircraftDamage"])
+plt.title("Aircraft Damage")
+# most have substantial damage, with about a quarter destroyed, and some minor
+
+#made data subsets for later analysis
+subs_dam = xml_df[xml_df["AircraftDamage"]=="Substantial"]
+dest_dam = xml_df[xml_df["AircraftDamage"]=="Destroyed"]
+minor_dam = xml_df[xml_df["AircraftDamage"]=="Minor"]
+
+#calculated percent of accidents with damage
+num_dam = len(subs_dam)+ len(dest_dam)+len(minor_dam) #74873
+#per_dam = num_dam/num_acc # greater than 100%, so incidents also have damage
+per_dam = num_dam/num_records #97%
+
 
 '''
 count         77257
