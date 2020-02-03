@@ -14,34 +14,18 @@ Created on Sun Feb  2 20:29:27 2020
 ## Import Files
 import json
 import pandas as pd
-import xml.etree.ElementTree as et 
+import xml.etree.ElementTree as et
 
-xtree = et.parse("./Data/AviationData.xml")
-xroot = xtree.getroot()
+path_to_xml_file = "./Data/AviationData.xml"
+# Load xml file data
 
-print(xroot)
-print(xtree)
+tree = et.parse(path_to_xml_file)
+data = []
+for el in tree.iterfind('./*'):
+    for i in el.iterfind('*'):
+        data.append(dict(i.items()))
+df = pd.DataFrame(data)
 
-df_cols = ["name", "email", "grade", "age"]
-rows = []
-
-for node in xroot: 
-    s_name = node.attrib.get("name")
-    s_mail = node.find("email").text if node is not None else None
-    s_grade = node.find("grade").text if node is not None else None
-    s_age = node.find("age").text if node is not None else None
-    
-    rows.append({"name": s_name, "email": s_mail, 
-                 "grade": s_grade, "age": s_age})
-
-out_df = pd.DataFrame(rows, columns = df_cols)
-#Preview a sample json file 
-
-
-with open('./Data/NarrativeData_499.json') as f:
-  data = json.load(f)
-  
-  
 
 
 def extract_values(obj, key):
