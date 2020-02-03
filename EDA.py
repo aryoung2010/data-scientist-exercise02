@@ -26,7 +26,9 @@ for el in tree.iterfind('./*'):
         data.append(dict(i.items()))
 df = pd.DataFrame(data)
 
-
+with open('./Data/NarrativeData_499.json') as f:
+  data = json.load(f)
+  
 
 def extract_values(obj, key):
     """Pull all values of specified key from nested JSON."""
