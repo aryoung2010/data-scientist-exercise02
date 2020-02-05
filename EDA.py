@@ -45,24 +45,56 @@ Created on Sun Feb  2 20:29:27 2020
 # most accidents fewer than 10 serious injuries
 # outliers above 100 (two)-- three >80
 # (second set between 30 and 85,  third tier about 11-29)
-#
-#
 
+# Number of Engines
+# In general, more engines means more fatalities. Two-engine
+# plane appear to be the most vulnerable to fatal crashes, 
+# However, there are more single engine accidents, and thus
+# more single engine fatalities (more flights).
+#
+# Amateur Built Planes
+# While they make up a smaller percentage of the flights, 
+# and thus accidents, amateur built planes do appear to 
+# be "riskier" than non-amateur built planes with 29% of 
+# the former leading to fatalities in accidents vs. 19%.
+#
+#Helicopter  	458	1317	1775	26%
+# Reciprocating       12100	12,100	50,916	63,016	19%
+# Turbo Prop            700	700	2,234	2,934	24%
+#Non-U.S., Non-Commercial              512	512	165	677	76%
+# NSCH   	970	2844	3814	25.43%
+# IMC     	3242	2338	5580	58.10%
+# NSCH   	970	2844	3814	25.43%
+# MANEUVERING	3704	5795	9499	39%
+
+# TODO: LOOK AT PURPOSE, ADD % SCRIPT
+#
+#
+# Research Questions:
+#   Are there certain planes that appear to crash more frequently?
+#   Are certain circumstances more likely to result in fatalities than others?
+#   What is going on with Non-US, Non-Commercial Flights?
+#
 #### QUESTIONS ############################################
 #
 # What is a flight identifier vs record idenentifier?
 #
 #
 
+#### CONSIDERATIONS ######################################
+#
+# Only have the incident data, not the full data of all flights
+# Made assumption that missing values for Injuries were infact 0 and not missing
+#
+
 
 #### NEXT STEPS ###########################################
 #
-#  1) Create Outcome variables to model/look at predictors
-#  2) Compare predictor variables to outcomes
-# (check for colinearity across plane variables)
-#  3) Attempt a linear or logistic model
-#  (if time)
-#  4) Map geolocations of accidents
+#   1) Case Study on "Non-US, Non-Commercial"Flights
+#   (if time)
+#   2) Map geolocations of accidents 
+#   3) Figure out way to chart or analyze plane data
+#   4) Check for colinearity across plane variables
 #  
 # Text Data
 #  1) create corpus
@@ -145,9 +177,15 @@ json_df = pd.DataFrame(list(zip(Event_ID,narrative,cause)), columns= ["Event_ID"
 #
 xml_df.dtypes
 
+print(len(xml_df[xml_df["InvestigationType"]=='Incident']))
+# 3050 incidents
+
 ## CAUTION!!!!!
-## CAUTION!!!!! Assumption made here that a missing value is null 
 ## CAUTION!!!!!
+## CAUTION!!!!! 
+## Assumption made here that a missing value is 0, would 
+## want to confirm by cross referencing with narratives. (if time)
+
 
 # Turn blanks to 0 for fatalities, make int
 xml_df['TotalFatalInjuries'] = xml_df['TotalFatalInjuries'].replace({'':'0'})
@@ -175,8 +213,48 @@ stats = xml_df.describe()
 for i in stats:
     print(stats[i])
 
+
 #print(xml_df.isnull().sum()) # no missing values?
 #print(xml_df == '').sum(axis=0) # no blank values?....doesnt seem right
+xml_df=xml_df.replace(r'^\s*$', np.nan, regex=True)
+print(xml_df.isnull().sum())   
+
+'''
+EventId                     0
+InvestigationType           0
+AccidentNumber              0
+EventDate                   3
+Location                   81
+Country                   510
+Latitude                53496
+Longitude               53505
+AirportCode             33780
+AirportName             29926
+InjurySeverity            106
+AircraftDamage           2384
+AircraftCategory        60737
+RegistrationNumber       2756
+Make                       87
+Model                     115
+AmateurBuilt              654
+NumberOfEngines          3921
+EngineType               3209
+FARDescription          60592
+Schedule                65878
+PurposeOfFlight          3598
+AirCarrier              73439
+TotalFatalInjuries          0 #21466
+TotalSeriousInjuries        0 #23513
+TotalMinorInjuries          0 #22524
+TotalUninjured              0 #11395
+WeatherCondition         1989
+BroadPhaseOfFlight       6227
+ReportStatus                0
+PublicationDate         13188
+dtype: int64
+'''
+
+#     
 num_records = len(xml_df)
 
 print(xml_df.columns)
@@ -296,8 +374,23 @@ sns.countplot(non_fatal["InjurySeverity"])
 per_fatal = num_fatal/num_acc #21%
 per_non_fatal = num_non_fatal/num_acc #79%
 
+# TODO: This appears to be a useful outcome variable, so going to look
+# at types of planes/flights with fatal vs non fatal accidents
 
+xml_df["Fatality_bin"] = np.nan
+xml_df['Fatality_bin'].loc[xml_df['InjurySeverity'].str.contains("Fatal\(")==False] = "Non-Fatal"
+xml_df['Fatality_bin'].loc[xml_df['InjurySeverity'].str.contains("Fatal\(")==True] = "Fatal"
 
+xml_df["Fatality_bin"].head(15)
+mod_df =xml_df[xml_df["Fatality_bin"].notnull()]
+
+### Check to be sure nulls only dropped for "Fatality_bin"
+mod_df.isnull().sum()    #ok
+
+cat = ["InvestigationType", "Location", "AirportCode", "Make","Model","AmateurBuilt", "NumberofEngines", "PurposeOfFlight", "WeatherCondition", "AircraftCategory","EngineType","FARDescription","Schedule", "AirCarrier","BroadPhaseOfFlight"]
+
+for i in cat:
+    sns.catplot(x=i, y="TotalFatalInjuries", kind="bar", data=mod_df)
 ############################################# Aircraft Damage
 '''
 count           77257
@@ -428,6 +521,27 @@ Name: TotalUninjured, dtype: object
 ##### Continuous Variables (5) ############################
 # Number of Engines
 
+
+sns.catplot(x="NumberOfEngines", y="TotalFatalInjuries", kind="bar", data=mod_df)
+sns.catplot(x="NumberOfEngines", y="TotalFatalInjuries", kind="box", data=mod_df)
+
+print(mod_df[mod_df["Fatality_bin"]=="Fatal"].groupby("NumberOfEngines")['Fatality_bin'].count())
+print(mod_df[mod_df["Fatality_bin"]=="Non-Fatal"].groupby("NumberOfEngines")['Fatality_bin'].count())
+
+#0	155	977	1132	14%
+#1	11314	50151	61465	18%
+#2	2513	7341	9854	26%
+#3	23	454	477	5%
+#4	52	354	406	13%
+
+sns.catplot(x="NumberOfEngines", y="TotalFatalInjuries", kind="swarm", data=mod_df)
+
+# In general, more engines, more likely to crash, though overlapping CI
+
+
+#sns.catplot(x="InvestigationType", y="TotalFatalInjuries", kind="bar", data=mod_df)
+#sns.catplot(x="Location", y="TotalFatalInjuries", kind="bar", data=mod_df)
+
 '''
 #count     77257
 #unique        8
@@ -439,6 +553,17 @@ Name: TotalUninjured, dtype: object
 ##### Boolean Variables (1) ################################
 # Amateur Built
 # TODO: Add any customized booleans [ie- any injuries, any fatalities, etc]
+
+
+sns.catplot(x="AmateurBuilt", y="TotalFatalInjuries", kind="bar", data=mod_df, stacked=True)
+
+print(mod_df[mod_df["Fatality_bin"]=="Fatal"].groupby("AmateurBuilt")['Fatality_bin'].count())
+print(mod_df[mod_df["Fatality_bin"]=="Non-Fatal"].groupby("AmateurBuilt")['Fatality_bin'].count())
+
+#AmateurBuilt Fatal	Amateur Built Non-Fatal	Total	% Fatal
+#13103	56095	69198	19%
+#2122	5283	7405	29%
+
 '''
 count     77257
 unique        3
@@ -463,19 +588,45 @@ Name: AmateurBuilt, dtype: object
 # Weather Condition
 # Broad Phase of Flight
 # Probable Cause
-'''
 
+###################################### INVESTIGATION TYPE
+
+sns.catplot(x="InvestigationType", y="TotalFatalInjuries", kind="bar", data=mod_df)
+
+print(mod_df[mod_df["Fatality_bin"]=="Fatal"].groupby("InvestigationType")['Fatality_bin'].count())
+print(mod_df[mod_df["Fatality_bin"]=="Non-Fatal"].groupby("InvestigationType")['Fatality_bin'].count())
+
+# All fatalities were due to accidents, no incidents led to fatalities
+
+'''
 count        77257
 unique           2
 top       Accident
 freq         74207
 Name: InvestigationType, dtype: object
+'''
 
-count     77257
-unique     9489
-top            
-freq      33780
-Name: AirportCode, dtype: object
+#TO DO--- possibly map these, too many to look at with a cat plot
+
+###################################### AIRCRAFT CATEGORY
+
+#sns.catplot(x="AircraftCategory", y="TotalFatalInjuries", kind="bar", data=mod_df)
+
+print(mod_df[mod_df["Fatality_bin"]=="Fatal"].groupby("AircraftCategory")['Fatality_bin'].count())
+print(mod_df[mod_df["Fatality_bin"]=="Non-Fatal"].groupby("AircraftCategory")['Fatality_bin'].count())
+
+'''	Fatal	Nonfatal	Total	% Fatal
+Airplane	3067	11143	14210	22%
+Balloon 	10	110	120	8%
+Glider   	50	211	261	19%
+Gyrocraft 	17	45	62	27%
+Helicopter  	458	1317	1775	26%
+Powered Parachute  	1	9	10	10%
+Rocket                  	1	2	3	33%
+Ultralight       	4	14	18	22%
+Unknown       	13	27	40	33%
+Weight-Shift   	7	13	20	35%
+Blimp                    1	1		1	100%
 
 count     77257
 unique       13
@@ -483,6 +634,147 @@ top
 freq      60737
 Name: AircraftCategory, dtype: object
 
+'''
+############################################ ENGINE TYPE
+'''
+count             77257
+unique               15
+top       Reciprocating
+freq              63016
+Name: EngineType, dtype: object
+
+'''
+#sns.catplot(x="EngineType", y="TotalFatalInjuries", kind="bar", data=mod_df)
+
+print(mod_df[mod_df["Fatality_bin"]=="Fatal"].groupby("EngineType")['Fatality_bin'].count())
+print(mod_df[mod_df["Fatality_bin"]=="Non-Fatal"].groupby("EngineType")['Fatality_bin'].count())
+'''
+	Fatal	Non-fatal	total	percentage
+Hybrid Rocket           1	1		1	100%
+REC, TJ, REC, TJ        1	1		1	100%
+REC, TJ, TJ             2	2		2	100%
+Reciprocating       12100	12,100	50,916	63,016	19%
+TJ, REC, REC, TJ        1	1		1	100%
+Turbo an             169`	169	1,978	2,147	8%
+Turbo Jet             129	129	540	669	19%
+Turbo Prop            700	700	2,234	2,934	24%
+Turbo Shaft           703	703	2,501	3,204	22%
+Unknown               450	450	1,613	2,063	22%
+'''
+	
+###################################### FAR DESCRIPTION
+
+
+sns.catplot(x="FARDescription", y="TotalFatalInjuries", kind="bar", data=mod_df)
+
+print(mod_df[mod_df["Fatality_bin"]=="Fatal"].groupby("FARDescription")['Fatality_bin'].count())
+print(mod_df[mod_df["Fatality_bin"]=="Non-Fatal"].groupby("FARDescription")['Fatality_bin'].count())
+'''
+count     77257
+unique       17
+top            
+freq      60592
+Name: FARDescription, dtype: object
+
+
+rmed Forces                            	1	5	6	17%
+Non-U.S., Commercial                  142	142	347	489	29%
+Non-U.S., Non-Commercial              512	512	165	677	76%
+Part 121: Air Carrier                  11	11	466	477	2%
+Part 125: 20+ Pax,6000+ lbs             1	1	6	7	14%
+Part 129: Foreign                      26	26	159	185	14%
+Part 133: Rotorcraft Ext. Load         15	15	72	87	17%
+Part 135: Air Taxi & Commuter         134	134	509	643	21%
+Part 137: Agricultural                 73	73	737	810	9%
+Part 437: Commercial Space Flight       1	1		1	100%
+Part 91: General Aviation            2643	2643	10291	12934	20%
+Public Use                             32	32	126	158	20%
+Unknown                                78	78	94	172	45%
+'''
+###################################### SCHEDULE
+
+sns.catplot(x="Schedule", y="TotalFatalInjuries", kind="bar", data=mod_df)
+
+print(mod_df[mod_df["Fatality_bin"]=="Fatal"].groupby("Schedule")['Fatality_bin'].count())
+print(mod_df[mod_df["Fatality_bin"]=="Non-Fatal"].groupby("Schedule")['Fatality_bin'].count())
+'''
+NSCH   	970	2844	3814	25.43%
+SCHD    	304	3162	3466	8.77%
+UNK    	631	3468	4099	15.39%
+
+count     77257
+unique        4
+top            
+freq      65878
+Name: Schedule, dtype: object
+'''
+###################################### PURPOSE OF FLIGHT
+
+'''
+count        77257
+unique          23
+top       Personal
+freq         43360
+Name: PurposeOfFlight, dtype: object
+'''
+
+sns.catplot(x="WeatherCondition", y="TotalFatalInjuries", kind="bar", data=mod_df)
+
+print(mod_df[mod_df["Fatality_bin"]=="Fatal"].groupby("WeatherCondition")['Fatality_bin'].count())
+print(mod_df[mod_df["Fatality_bin"]=="Non-Fatal"].groupby("WeatherCondition")['Fatality_bin'].count())
+'''
+IMC     	3242	2338	5580	58.10%
+UNK      	474	450	924	51.30%
+VMC    	10941	57823	68764	15.91%
+
+count     77257
+unique        4
+top         VMC
+freq      68764
+Name: WeatherCondition, dtype: object
+'''
+'''
+count       77257
+unique         13
+top       LANDING
+freq        18553
+Name: BroadPhaseOfFlight, dtype: object
+'''
+###################################### BROAD PHASE OF FLIGHT
+
+
+sns.catplot(x="BroadPhaseOfFlight", y="TotalFatalInjuries", kind="bar", data=mod_df)
+
+print(mod_df[mod_df["Fatality_bin"]=="Fatal"].groupby("BroadPhaseOfFlight")['Fatality_bin'].count())
+print(mod_df[mod_df["Fatality_bin"]=="Non-Fatal"].groupby("BroadPhaseOfFlight")['Fatality_bin'].count())
+'''
+APPROACH	1838	5672	7510	24%
+CLIMB	669	1556	2225	30%
+CRUISE 	2885	7712	10597	27%
+DESCENT 	537	1615	2152	25%
+GO-AROUND 	323	1247	1570	21%
+LANDING  	334	18219	18553	2%
+MANEUVERING	3704	5795	9499	39%
+OTHER	52	95	147	35%
+STANDING   	120	1043	1163	10%
+TAKEOFF 	2187	12553	14740	15%
+TAXI 	43	2217	2260	2%
+UNKNOWN 	463	151	614	75%
+
+count              77257
+unique                 4
+top       Probable Cause
+freq               72264
+Name: ReportStatus, dtype: object
+
+'''
+#########################################################
+###### PLANES {COME BACK TO} ############################
+#########################################################
+
+
+## TODO: Comeback and find the top 10 or something here for Make, Model, and Carrier
+'''
 count      77257
 unique      7204
 top       CESSNA
@@ -495,56 +787,16 @@ top         152
 freq       2251
 Name: Model, dtype: object
 
-count             77257
-unique               15
-top       Reciprocating
-freq              63016
-Name: EngineType, dtype: object
-
-count     77257
-unique       17
-top            
-freq      60592
-Name: FARDescription, dtype: object
-
-count     77257
-unique        4
-top            
-freq      65878
-Name: Schedule, dtype: object
-
-count        77257
-unique          23
-top       Personal
-freq         43360
-Name: PurposeOfFlight, dtype: object
-
 count     77257
 unique     2814
 top            
 freq      73439
 Name: AirCarrier, dtype: object
-
-count     77257
-unique        4
-top         VMC
-freq      68764
-Name: WeatherCondition, dtype: object
-
-count       77257
-unique         13
-top       LANDING
-freq        18553
-Name: BroadPhaseOfFlight, dtype: object
-
-count              77257
-unique                 4
-top       Probable Cause
-freq               72264
-Name: ReportStatus, dtype: object
-
 '''
 
+#########################################################
+##### MAPPING {COME BACK TO} ############################
+#########################################################
 
 ##### Geospatial Variables (3)###########################
 # Country
@@ -587,10 +839,18 @@ unique    22284
 top            
 freq      29926
 Name: AirportName, dtype: object
+
+count     77257
+unique     9489
+top            
+freq      33780
+Name: AirportCode, dtype: object
 '''
-##### Date Variables (2) ##############################
+#########################################################
+##### DATES {COME BACK TO} ############################
+#########################################################
 # Event Date
-# TODO: convert Publication Date to date field
+#Publication Date
 
 '''
 count          77257
