@@ -112,16 +112,16 @@ import pandas as pd
 import xml.etree.ElementTree as et
 import numpy as np
 import seaborn as sns #visualisation
-import matplotlib.pyplot as plt #visualisation
-sns.set(color_codes=True)
-
+import matplotlib
+matplotlib.use('agg')
+import matplotlib.pyplot as plt
 
 ##########################################################
 ### Convert XML Data file to pandas DataFrame
 ##########################################################
 
 ## label file path
-path_to_xml_file = "./Data/AviationData.xml"
+path_to_xml_file = "./data/AviationData.xml"
 
 # Load xml file data
 tree = et.parse(path_to_xml_file)
@@ -139,7 +139,7 @@ xml_df = pd.DataFrame(data)
 ###########################################################
 
 #load json file to object
-with open('./Data/NarrativeData_499.json') as f:
+with open('./data/NarrativeData_499.json') as f:
   data = json.load(f)
   
 #function to extract json values and create field lists
@@ -217,6 +217,7 @@ for i in stats:
 #print(xml_df.isnull().sum()) # no missing values?
 #print(xml_df == '').sum(axis=0) # no blank values?....doesnt seem right
 xml_df=xml_df.replace(r'^\s*$', np.nan, regex=True)
+
 print(xml_df.isnull().sum())   
 
 '''
