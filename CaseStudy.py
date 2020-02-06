@@ -289,7 +289,7 @@ Name: TotalUninjured, dtype: float64
 print(xml_df["AircraftCategory"].describe())
 print(nuncf["AircraftCategory"].describe())
 
-
+'''
 count     77257
 unique       13
 top            
@@ -300,7 +300,7 @@ unique           4
 top       Airplane
 freq           434
 Name: AircraftCategory, dtype: object
-
+'''
 print(nuncf["AircraftCategory"].unique())
 #['Helicopter' 'Airplane' '' 'Balloon']
 

@@ -42,11 +42,12 @@ Created on Wed Feb  5 21:53:17 2020
 import json
 import pandas as pd
 import xml.etree.ElementTree as et
-import numpy as np
-import seaborn as sns #visualisation
+from nltk import word_tokenize
+from nltk.corpus import stopwords
+#nltk.download()
 import matplotlib
 matplotlib.use('agg')
-import matplotlib.pyplot as plt
+
 
 pd.set_option('display.max_rows',500)
 pd.set_option('display.max_columns',500)
@@ -213,3 +214,43 @@ print(len(master_json))
 ############ Combine text and xml file data to create corpus
 
 corpus = brazil_fatal.merge(master_json, left_on='EventId', right_on='Event_ID', how='inner')
+##93 of 100 matched- not bad!
+
+#preview a corpus record, and test text methods on first narrative
+
+corpus.head(1)
+# No cause records, it appears all narratives from Brazil have a similar text 
+# format, as illustrated by the first one below.
+text = corpus['Narrative'][0]
+print(text)
+'''
+The foreign authority was the source of this information.
+On July 19, 2015, at 2115 local time, a Cessna 210D, Brazilian registration 
+PR-ITO, was destroyed when it impacted terrain during a go-around at 
+General Leite De Castro Airport (SWLC), Goiás, Brazil. The Mexican pilot 
+incurred minor injuries, while the Colombian passenger was fatally injured. 
+The flight, which originated at Jundiaí Airport, Jundiaí, São Paulo, Brazil, 
+was being conducted under Brazilian flight regulations.
+'''
+
+#set stopwords to English languate
+a= set(stopwords.words('english'))
+
+# Convert text to lowercase
+text1= word_tokenize(text.lower())
+print(text1)
+
+## stopwords may be handy for looking at any perhaps cities or other key words
+# relavent to circumstances in weather or accident causes
+stopwords = [x for x in text1 if x not in a]
+print (stopwords)
+
+['foreign', 'authority', 'source', 'information.on', 'july', '19', ',',
+ '2015', ',', '2115', 'local', 'time', ',', 'cessna', '210d', ',', 'brazilian',
+ 'registration', 'pr-ito', ',', 'destroyed', 'impacted', 'terrain', 
+ 'go-around', 'general', 'leite', 'de', 'castro', 'airport', '(', 'swlc', ')',
+ ',', 'goiás', ',', 'brazil', '.', 'mexican', 'pilot', 'incurred', 'minor', 
+ 'injuries', ',', 'colombian', 'passenger', 'fatally', 'injured', '.', 
+ 'flight', ',', 'originated', 'jundiaí', 'airport', ',', 'jundiaí', ',', 
+ 'são', 'paulo', ',', 'brazil', ',', 'conducted', 'brazilian', 'flight', 
+ 'regulations', '.']

@@ -1,2 +1,6 @@
-seaborn==0.9.1
-pandas==0.24.2
+seaborn
+pandas
+xml
+nltk
+matplotlib
+numpy
