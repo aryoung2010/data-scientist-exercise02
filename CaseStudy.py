@@ -22,7 +22,7 @@ Created on Wed Feb  5 19:46:24 2020
 #  A) loading datasets into pandas dataframes
 #  B) creating a case-study dataset of just Non-US, Non- Commercial
 #   flights, and comparing them to the full data set
-#  C) Adding context with text analysis 
+# 
 #
 # 
 ############################################################
@@ -53,10 +53,6 @@ Created on Wed Feb  5 19:46:24 2020
 # In a real-life project, this would be the point in the project when I would
 # want to speak with a subject matter expert to gain insight into what kind of
 # flights this designation describes.
-
-# What makes up the majority of these Accidents?
-
-# While 
 
 
 ##########################################################
@@ -493,6 +489,16 @@ print(brazil_heli.groupby(['BroadPhaseOfFlight'])["TotalFatalInjuries"].count().
 ############# Story Check
 ############# Are Airplanes Similar to Helicopters?
 #############
+
+brazil = nuncf[nuncf["Country"]== 'Brazil']
+#110
+
+print(brazil.groupby(['AircraftCategory'])["EventId"].count().sort_values(ascending=False))
+
+#Accidents by type
+#AircraftCategory
+#Airplane      77
+#Helicopter    20
 
 
 brazil_air = nuncf[nuncf["AircraftCategory"]=="Airplane"]
