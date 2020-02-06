@@ -221,8 +221,8 @@ corpus = brazil_fatal.merge(master_json, left_on='EventId', right_on='Event_ID',
 corpus.head(1)
 # No cause records, it appears all narratives from Brazil have a similar text 
 # format, as illustrated by the first one below.
-text = corpus['Narrative'][0]
-print(text)
+#text = corpus['Narrative'][0]
+#print(text)
 '''
 The foreign authority was the source of this information.
 On July 19, 2015, at 2115 local time, a Cessna 210D, Brazilian registration 
@@ -234,16 +234,16 @@ was being conducted under Brazilian flight regulations.
 '''
 
 #set stopwords to English languate
-a= set(stopwords.words('english'))
+#a= set(stopwords.words('english'))
 
 # Convert text to lowercase
-text1= word_tokenize(text.lower())
-print(text1)
+#text1= word_tokenize(text.lower())
+#print(text1)
 
 ## stopwords may be handy for looking at any perhaps cities or other key words
 # relavent to circumstances in weather or accident causes
-stopwords = [x for x in text1 if x not in a]
-print (stopwords)
+#stopwords = [x for x in text1 if x not in a]
+#print (stopwords)
 
 ['foreign', 'authority', 'source', 'information.on', 'july', '19', ',',
  '2015', ',', '2115', 'local', 'time', ',', 'cessna', '210d', ',', 'brazilian',
@@ -254,3 +254,18 @@ print (stopwords)
  'flight', ',', 'originated', 'jundiaí', 'airport', ',', 'jundiaí', ',', 
  'são', 'paulo', ',', 'brazil', ',', 'conducted', 'brazilian', 'flight', 
  'regulations', '.']
+
+all_words = list()
+
+a= set(stopwords.words('english'))
+
+for i in range(len(corpus)):   
+    text = corpus['Narrative'][i]
+    #print(text)
+    text1 = word_tokenize(text.lower())
+    #print(text1)
+    stopwords_c = [x for x in text1 if x not in a]
+   # print(stopwords)
+    all_words= all_words.append(stopwords_c)
+    print("Narrative {} added to list".format(i))
+    
