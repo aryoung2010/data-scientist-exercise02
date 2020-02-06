@@ -56,16 +56,50 @@ Created on Sun Feb  2 20:29:27 2020
 # While they make up a smaller percentage of the flights, 
 # and thus accidents, amateur built planes do appear to 
 # be "riskier" than non-amateur built planes with 29% of 
-# the former leading to fatalities in accidents vs. 19%.
+# the former leading to fatalities in accidents vs. 19% for
+# professionally built planes.
 #
-#Helicopter  	458	1317	1775	26%
-# Reciprocating       12100	12,100	50,916	63,016	19%
-# Turbo Prop            700	700	2,234	2,934	24%
-#Non-U.S., Non-Commercial              512	512	165	677	76%
-# NSCH   	970	2844	3814	25.43%
-# IMC     	3242	2338	5580	58.10%
-# NSCH   	970	2844	3814	25.43%
-# MANEUVERING	3704	5795	9499	39%
+# Type of Aircraft
+# Helicopters were some of the riskiest aircrafts to fly in, 
+# with 26% of reports including fatalities. However, one may
+# hypothesize that emergency responders may be navigating 
+# difficult conditions that could contribute to there being more
+# helicopter accidents. They can get into places most planes
+# can not. 
+#
+# Type of Engine
+# While reciprocating engines made up the vast majority of fatal
+# reports (again, likely to be the most common type), Turbo prop 
+# engines appeared to be the riskiest, leading to at least one 
+# fatality in 24% or nearly 1 in 4 accidents. 
+#
+#
+# FA Description
+# A really interesting finding is that 76% of accidents that occur
+# for Non-U.S., Non-Commercial flights lead to a fatality (512 of 677).
+# This is a really massive majority, making it a topic of keen interest 
+# to explore in the text data. It makes me curious if there are factors
+# that could be modified or improved to prevent these accidents from 
+# having such fatal outcomes.
+#
+# Schedule
+# 25% or 1 in 4 Accidents with NSCH schedule were fatal.
+#
+# Weather
+# 58% of Accidents under IMC conditions were fatal. This designation 
+# stands for Instrument meteorological conditions. This is an aviation 
+# flight category that describes weather conditions that require pilots t
+# to fly primarily by reference to instruments, and therefore under instrument 
+# flight rules, rather than by outside visual references under visual flight rules.
+# I imagine this means times with low visability such as storms and fog.
+#
+
+# Phase of Flight
+# The most dangerous flight phase, in terms of proportion of accidents leading
+# to mortality, is Maneuvering. 39% of accidents that occured during maneuvering
+# resulted in a fatality. My hypothesis, which I can check if I have time, would
+# be that perhaps the Helicopter accidents contribute a great deal to this statistic.
+
 
 # TODO: LOOK AT PURPOSE, ADD % SCRIPT
 #
@@ -371,11 +405,10 @@ num_non_fatal= len(non_fatal) - num_inc #61848 - 2050 = 58798
 sns.countplot(non_fatal["InjurySeverity"]) 
 
 # calculated percentage of accidents as fatal or non fatal
-# TODO: turn number of fatalities into useable format, if not otherwise stored
 per_fatal = num_fatal/num_acc #21%
 per_non_fatal = num_non_fatal/num_acc #79%
 
-# TODO: This appears to be a useful outcome variable, so going to look
+# This appears to be a useful outcome variable, so going to look
 # at types of planes/flights with fatal vs non fatal accidents
 
 xml_df["Fatality_bin"] = np.nan
@@ -428,7 +461,6 @@ per_dam = num_dam/num_records #97%
 # Total Serious Injuries
 # Total Minor Injuries
 # Total Uninjured
-# TODO: ---add together for total passengers?
 
 ###################################### Total Fatal Injuries 
 '''
@@ -553,7 +585,6 @@ sns.catplot(x="NumberOfEngines", y="TotalFatalInjuries", kind="swarm", data=mod_
 
 ##### Boolean Variables (1) ################################
 # Amateur Built
-# TODO: Add any customized booleans [ie- any injuries, any fatalities, etc]
 
 
 sns.catplot(x="AmateurBuilt", y="TotalFatalInjuries", kind="bar", data=mod_df, stacked=True)
