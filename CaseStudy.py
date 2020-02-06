@@ -54,7 +54,9 @@ Created on Wed Feb  5 19:46:24 2020
 # want to speak with a subject matter expert to gain insight into what kind of
 # flights this designation describes.
 
-# 
+# What makes up the majority of these Accidents?
+
+# While 
 
 
 ##########################################################
@@ -69,6 +71,10 @@ import seaborn as sns #visualisation
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
+
+pd.set_option('display.max_rows',500)
+pd.set_option('display.max_columns',500)
+
 
 ##########################################################
 ### Convert XML Data file to pandas DataFrame
@@ -370,24 +376,24 @@ print(print(nuncf_heli["Country"].unique()))
 '''
 
 print(nuncf_heli[nuncf_heli["TotalFatalInjuries"]>0].groupby('Country')["TotalFatalInjuries"].count().sort_values(ascending=False))
-print(nuncf_heli.groupby('Country')["TotalFatalInjuries"].count().sort_values(ascending=False))
+print(nuncf_heli.groupby('Country')["TotalFatalInjuries"].sum().sort_values(ascending=False))
 print(nuncf_heli.groupby('Country')["EventId"].count().sort_values(ascending=False))
 
 '''
 Country   Fatal_Accidents   Fatalities    Accidents    % Fatal
-Brazil                19    20             20              95%
-Australia             10    12             12              83%
-Russia                 9    12             12              75%
-Germany                6    7              7               86%
-Colombia               6    7              7               86%
-United Kingdom         5    7              7               71%
-Venezuela              4    6              6               67%
-Spain                  4    4              4              100%
-France                 4    4              4              100%
-Malaysia               3    3              3              100%
-Mexico                 3    8              8               38%
-Chile                  3    5              5               60%
-Italy                  3    3              3              100%
+Brazil                19    43             20              95%
+Australia             10    16             12              83%
+Russia                 9    25             12              75%
+Germany                6    12             7               86%
+Colombia               6    17             7               86%
+United Kingdom         5    17             7               71%
+Venezuela              4    13             6               67%
+Spain                  4    6              4              100%
+France                 4    9              4              100%
+Malaysia               3    5              3              100%
+Mexico                 3    6              8               38%
+Chile                  3    18             5               60%
+Italy                  3    8              3              100%
 Haiti                  2
 India                  2    
 Canada                 2
@@ -425,181 +431,113 @@ print(brazil_heli["Make"].unique())
 ['BELL' 'ROBINSON' 'AGUSTA' 'EMBRAER']
 
 
-
-
-
-
-
-
-
-################# Extra Exploration #####################
-print(nuncf_heli["Make"].unique())
-
-
-'''
-['ROBINSON' 'BELL' 'HUGHES' 'SCHWEIZER' 'ROBINSON HELICOPTER'
- 'ROBINSON HELICOPTER COMPANY' 'EUROCOPTER' 'ENSTROM' 'MD HELICOPTER'
- 'AGUSTA' 'AEROSPATIALE' 'MCDONNELL DOUGLAS' '' 'SIKORSKY'
- 'McDonnell Douglas Helicopter' 'Scotts-Bell 47, Inc.'
- 'BELL HELICOPTER TEXTRON CANADA' 'ERICKSON' 'BOLKOW' 'EMBRAER' 'Robinson'
- 'Eurocopter Deutsch' 'Schweizer' 'Bell' 'Garlick' 'Eurocopter' 'Mil']
-'''
-print(nuncf_heli[nuncf_heli["TotalFatalInjuries"]>0].groupby('Make')["TotalFatalInjuries"].count().sort_values(ascending=False))
-print(nuncf_heli.groupby('Make')["TotalFatalInjuries"].count().sort_values(ascending=False))
-print(nuncf_heli.groupby('Make')["EventId"].count().sort_values(ascending=False))
+print(brazil_heli.groupby('Make')["TotalFatalInjuries"].count().sort_values(ascending=False))
+print(brazil_heli.groupby('Make')["EventId"].count().sort_values(ascending=False))
 
 '''
 Fatal Accidents by Make
-ROBINSON                          45
-BELL                              25
-Robinson                           5
-HUGHES                             5
-EUROCOPTER                         4
-SCHWEIZER                          3
-AGUSTA                             3
-ENSTROM                            2
-ROBINSON HELICOPTER COMPANY        2
-AEROSPATIALE                       2
-BELL HELICOPTER TEXTRON CANADA     1
-BOLKOW                             1
-Bell                               1
+ROBINSON    13
+BELL         5
+EMBRAER      1
+AGUSTA       1
+Name: TotalFatalInjuries, dtype: int64
+'''
 
-Fatalities by Make
-ROBINSON                          53
-BELL                              36
-Bell                               9
-HUGHES                             7
-EUROCOPTER                         7
-Robinson                           6
-AGUSTA                             3
-MCDONNELL DOUGLAS                  3
-SCHWEIZER                          3
-AEROSPATIALE                       3
-ROBINSON HELICOPTER COMPANY        2
-ENSTROM                            2
-                                   2
-ERICKSON                           1
-BELL HELICOPTER TEXTRON CANADA     1
+print(brazil_heli["Model"].unique())
+'''
+['206B' 'R44 - II' 'R22 - BETA' 'R44' 'R66' '212' 'R22' 'AW119MKII' '206'
+ 'EMB-720']
+'''
 
-Accidents by Make (All Countries)
-ROBINSON                          53
-BELL                              36
-Bell                               9
-HUGHES                             7
-EUROCOPTER                         7
-Robinson                           6
-AGUSTA                             3
+print(brazil_heli.groupby(['Make','Model'])["TotalFatalInjuries"].count().sort_values(ascending=False))
 
 
 '''
+FatalAccidents by Make and Model
+Make      Model     
+ROBINSON  R44           7
+BELL      206B          3
+ROBINSON  R66           2
+          R22 - BETA    2
+          R44 - II      1
+          R22           1
+EMBRAER   EMB-720       1
+BELL      212           1
+          206           1
+AGUSTA    AW119MKII     1
+Name: TotalFatalInjuries, dtype: int64
+'''
 
-count          150
-unique          27
-top       ROBINSON
-freq            53
-Name: Make, dtype: object
+print(brazil_heli["PurposeOfFlight"].unique())
+'''
+['Personal' 'Instructional' 'Unknown' 'Business' 'Aerial Observation'
+ 'Other Work Use']
+'''
+print(brazil_heli.groupby(['PurposeOfFlight','Make'])["TotalFatalInjuries"].count().sort_values(ascending=False))
+'''
+Top # Fatal Accidents by Purpose and Make
+Unknown             ROBINSON    5
+Personal            ROBINSON    4
+Unknown             BELL        2
+Instructional       ROBINSON    2
+'''
+
+## Well Unknown could be rescues or something? But seems like
+# that theory may be shakey.
+
+print(brazil_heli.groupby(['BroadPhaseOfFlight'])["TotalFatalInjuries"].count().sort_values(ascending=False))
+# Weather, Schedule, Phase of flight mostly unknown
 
 
+#############
+############# Story Check
+############# Are Airplanes Similar to Helicopters?
+#############
 
 
+brazil_air = nuncf[nuncf["AircraftCategory"]=="Airplane"]
+print(brazil_air.groupby(['PurposeOfFlight','Make'])["TotalFatalInjuries"].count().sort_values(ascending=False))
+'''
+Fatal Accidents by Purpose and Make
+PurposeOfFlight          Make                          
+Unknown                  CESSNA                            51
+Personal                 CESSNA                            32
+                         PIPER                             25
+Unknown                  PIPER                             24
+Personal                 BEECH                             14
+                         Cessna                            14
+Instructional            CESSNA                            13
+Personal                 Piper                             10
+Unknown                  BEECH                             10
+Aerial Application       CESSNA                             9
+Instructional            PIPER                              9
+Business                 CESSNA                             8
+'''
+                 
+print(brazil_air.groupby(['Make','Model'])["TotalFatalInjuries"].count().sort_values(ascending=False))
 
-
-
-
-count     150
-unique     64
-top       R44
-freq       29
-Name: Model, dtype: object
-count     150
-unique      3
-top        No
-freq      138
-Name: AmateurBuilt, dtype: object
-count     150
-unique      3
-top         1
-freq       76
-Name: NumberOfEngines, dtype: object
-count     150
-unique      5
-top          
-freq       86
-Name: EngineType, dtype: object
-count                          150
-unique                           1
-top       Non-U.S., Non-Commercial
-freq                           150
-Name: FARDescription, dtype: object
-count     150
-unique      3
-top          
-freq      143
-Name: Schedule, dtype: object
-count         150
-unique         16
-top       Unknown
-freq           60
-Name: PurposeOfFlight, dtype: object
-count     150
-unique      1
-top          
-freq      150
-Name: AirCarrier, dtype: object
-count    150.000000
-mean       1.806667
-std        2.100485
-min        0.000000
-25%        0.000000
-50%        1.000000
-75%        2.000000
-max       13.000000
-Name: TotalFatalInjuries, dtype: float64
-count    150.000000
-mean       0.293333
-std        0.798881
-min        0.000000
-25%        0.000000
-50%        0.000000
-75%        0.000000
-max        4.000000
-Name: TotalSeriousInjuries, dtype: float64
-count    150.000000
-mean       0.313333
-std        1.193588
-min        0.000000
-25%        0.000000
-50%        0.000000
-75%        0.000000
-max       10.000000
-Name: TotalMinorInjuries, dtype: float64
-count    150.000000
-mean       0.533333
-std        1.863340
-min        0.000000
-25%        0.000000
-50%        0.000000
-75%        0.000000
-max       18.000000
-Name: TotalUninjured, dtype: float64
-count     150
-unique      4
-top          
-freq       80
-Name: WeatherCondition, dtype: object
-count     150
-unique      5
-top          
-freq      141
-Name: BroadPhaseOfFlight, dtype: object
-count         150
-unique          2
-top       Foreign
-freq          149
-Name: ReportStatus, dtype: object
-count     150
-unique    107
-top          
-freq       38
-Name: PublicationDate, dtype: object
+'''
+Make                            Model            
+CESSNA                          172                  14
+                                182                   9
+                                210                   8
+CIRRUS                          SR22                  7
+CESSNA                          150                   6
+BEECH                           A36                   6
+CESSNA                          172N                  5
+PIPER                           PA34                  5
+BEECH                           58                    5
+AIR TRACTOR                     AT802                 4
+CESSNA                          A188B                 4
+Cessna                          182                   3
+CESSNA                          152                   3
+CIRRUS                          SR20                  3
+PIPER                           PA-30                 3
+                                PA-34                 3
+EMBRAER                         EMB711                3
+CESSNA                          T206H                 3
+                                210N                  3
+                                172R                  3
+PIPER                           PA28R                 3
+Cessna                          152                   3
 '''
