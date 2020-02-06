@@ -69,44 +69,6 @@ for el in tree.iterfind('./*'):
 ##create pandas dataframe to hold data
 xml_df = pd.DataFrame(data)
 
-
-###########################################################
-### Convert JSON data from single file to pandas DataFrame
-###########################################################
-
-#load json file to object
-with open('./data/NarrativeData_499.json') as f:
-  data = json.load(f)
-  
-#function to extract json values and create field lists
-def extract_values(obj, key):
-    """Pull all values of specified key from nested JSON."""
-    arr = []
-
-    def extract(obj, arr, key):
-        """Recursively search for values of key in JSON tree."""
-        if isinstance(obj, dict):
-            for k, v in obj.items():
-                if isinstance(v, (dict, list)):
-                    extract(v, arr, key)
-                elif k == key:
-                    arr.append(v)
-        elif isinstance(obj, list):
-            for item in obj:
-                extract(item, arr, key)
-        return arr
-
-    results = extract(obj, arr, key)
-    return results
-
-#field lists for each set of json values
-Event_ID = extract_values(data, 'EventId')
-narrative = extract_values(data, 'narrative')
-cause = extract_values(data, 'probable_cause')
-
-#combine lists into a pandas dataframe
-json_df = pd.DataFrame(list(zip(Event_ID,narrative,cause)), columns= ["Event_ID", "Narrative", "Cause"])
-
 ###########################################################
 ### Data Cleaning
 ###########################################################
@@ -168,7 +130,7 @@ brazil_fatal = brazil[brazil["TotalFatalInjuries"]> 0] #101
 
 ## 92% of Brazilian Accidents are Fatal
 
-json_df.head(1) ## Event_Id is in both
+#json_df.head(1) ## Event_Id is in both
 
 brazil_fatal.head(1) ##Event_Id is the same
 
@@ -177,6 +139,77 @@ brazil_fatal_list = list(brazil_fatal["EventId"].unique())
 ## 100 Ids to merge with Ids in the text
 
 
+###########################################################
+### Convert JSON data from single file to pandas DataFrame
+###########################################################
+
+#load json file to object
+
+### 145 json files, start at 499, add 500 each time
+
+#create a master dataframe to hold all the .json data from the files in the
+# data folder
+master_json = pd.DataFrame(columns= ["Event_ID", "Narrative", "Cause"])
 
 
-corpus = brazil_fatal.merge(json_df, left_on='EventId', right_on='Event_ID', how='inner')
+  
+#function to extract json values and create field lists
+def extract_values(obj, key):
+    """Pull all values of specified key from nested JSON."""
+    arr = []
+
+    def extract(obj, arr, key):
+        """Recursively search for values of key in JSON tree."""
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                if isinstance(v, (dict, list)):
+                    extract(v, arr, key)
+                elif k == key:
+                    arr.append(v)
+        elif isinstance(obj, list):
+            for item in obj:
+                extract(item, arr, key)
+        return arr
+
+    results = extract(obj, arr, key)
+    return results
+
+## iterate through each file, extract the data, and append to master file
+for i in range (1,143):
+    fnum = (i*500)-1
+    with open('./data/NarrativeData_{}.json'.format(fnum)) as f:
+        data = json.load(f)
+  
+    #field lists for each set of json values
+    Event_ID = extract_values(data, 'EventId')
+    narrative = extract_values(data, 'narrative')
+    cause = extract_values(data, 'probable_cause')
+
+    #combine lists into a pandas dataframe
+    json_df = pd.DataFrame(list(zip(Event_ID,narrative,cause)), columns= ["Event_ID", "Narrative", "Cause"])
+    master_json= master_json.append(json_df)
+    print("File {} added".format(fnum))
+
+##add the last file, which doesn't follow the naming convention of others
+with open('./data/NarrativeData_999999.json') as f:
+        data = json.load(f)
+  
+#field lists for each set of json values
+Event_ID = extract_values(data, 'EventId')
+narrative = extract_values(data, 'narrative')
+cause = extract_values(data, 'probable_cause')
+
+#combine lists into a pandas dataframe
+json_df = pd.DataFrame(list(zip(Event_ID,narrative,cause)), columns= ["Event_ID", "Narrative", "Cause"])
+master_json= master_json.append(json_df)
+print("File 999999 added".format(fnum))
+    
+
+#check the length of the master file
+print(len(master_json))
+
+##71,133 files
+
+############ Combine text and xml file data to create corpus
+
+corpus = brazil_fatal.merge(master_json, left_on='EventId', right_on='Event_ID', how='inner')
