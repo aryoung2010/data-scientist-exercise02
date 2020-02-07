@@ -60,7 +60,7 @@ from urllib.request import urlopen
 import chart_studio.plotly as py
 import plotly.express as px
 import plotly.graph_objs as gobj
-chart_studio.tools.set_credentials_file(username='aryoung2010', api_key='Toam9dXe96Vcov9DLZ4D')
+#chart_studio.tools.set_credentials_file(username='', api_key='')
 from plotly.offline import download_plotlyjs,init_notebook_mode,plot,iplot
 init_notebook_mode(connected=True)
 
@@ -187,4 +187,4 @@ worldmap.update_layout(
     )
 )
 plot(worldmap)
-py.iplot(worldmap, filename='Countries with High Percentage of Fatal Accidents')
+#py.iplot(worldmap, filename='Countries with High Percentage of Fatal Accidents')
