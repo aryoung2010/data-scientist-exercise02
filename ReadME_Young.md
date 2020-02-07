@@ -89,7 +89,7 @@ in non-us, non-commercial group
 Additional Visualizations created outside of python 
 for summary document include:
 E)Calculations of helicopter vs airplane fatalities in these groups
-F( Table of high frequency makes and models for brazilian helicopter accidents, 
+F) Table of high frequency makes and models for brazilian helicopter accidents, 
 with helicopter graphic descriptions
 
 ## requirements.txt
