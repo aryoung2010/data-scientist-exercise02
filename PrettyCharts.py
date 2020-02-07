@@ -142,6 +142,14 @@ plt.xlim(0, 1)
 fard.savefig("FARD_chart.png")
 
 
+############################################################
+###
+############################################################
+brazil_heli= nuncf_heli[nuncf_heli["Country"]=="Brazil"]
+
+nuncf_heli = nuncf[nuncf["AircraftCategory"]=="Helicopter"]
+
+print(brazil_heli.groupby(['Make','Model'])["TotalFatalInjuries"].count().sort_values(ascending=False))
 
 ###########################################################
 ### NON-US, NON-COMMERCIAL HELICOPTER ACCIDENTS BY COUNTRY
@@ -188,3 +196,5 @@ worldmap.update_layout(
 )
 plot(worldmap)
 #py.iplot(worldmap, filename='Countries with High Percentage of Fatal Accidents')
+
+
