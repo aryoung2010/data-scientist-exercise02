@@ -1,0 +1,9 @@
+seaborn
+pandas
+xml
+nltk
+matplotlib
+numpy
+urllib
+plotly
+chart_studio
