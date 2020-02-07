@@ -1,4 +1,4 @@
-# 1) README_Young
+# README_Young
 
 These files are the result of an exploratory analysis assignment undertaken
 by Allison Young as part of her application for a Data Scientist postion
@@ -30,7 +30,7 @@ can install these automatically in cloud or other envrionments, using the code b
 
 # Included Scripts
 
-### 5) EDA.py
+#### 5) EDA.py
 
 This script takes as inputs, 
 1) an XML file of data downloaded
