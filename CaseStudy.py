@@ -16,14 +16,22 @@ Created on Wed Feb  5 19:46:24 2020
 # from the National Transportation Safety Board's database of 
 # aviation accidents.
 # (http://www.ntsb.gov/_layouts/ntsb.aviation/index.aspx)
-# 2) Data in .json format from the incident narratives
-#
-# Processes includes:
-#  A) loading datasets into pandas dataframes
-#  B) creating a case-study dataset of just Non-US, Non- Commercial
-#   flights, and comparing them to the full data set
 # 
 #
+# Processes includes:
+#  A) loading dataset into pandas dataframes
+#  B) creating a case-study dataset of just Non-US, Non- Commercial
+#   flights, and comparing them to the full data set
+#  C) examination of helicopters as a focus group, and 
+#   identification of variables associated with fatal accidents
+#   (country, make, model, weather, etc)
+# 
+# Outcome:
+#  The outcome of this script was to focus on Brazilian 
+#  helicopter accidents,particularly those that occured in 
+#  Robinson R44 models. The final step in my analysis looks 
+#  at text recordings from Brazilian helicopter accidents.
+# 
 # 
 ############################################################
 #### SUMMARY FINDINGS 
@@ -48,12 +56,19 @@ Created on Wed Feb  5 19:46:24 2020
 #  is extremely complicated. Factors that influence designation in addition
 # to the obvious ones (military, space craft, etc), include if the flight
 # is a regular transportation carrier, charter vehicle, as well as where the
-# pilot and crew are from/ certified.
+# pilot and crew are from/ certified. 
 #
 # In a real-life project, this would be the point in the project when I would
 # want to speak with a subject matter expert to gain insight into what kind of
 # flights this designation describes.
 
+
+# Brazillian helicopter accidents resulted in 43 deaths and 
+# 19 of the 20 accidents were fatal (95%). Essentially, if a Brazilian
+# helicopter goes down, it is bad news for the passengers and they are not 
+# likely to survive. 13 of the 20 accidents were aboard Robinson helicopters,
+# and more than half of those (8) were the R44 model.
+#
 
 ##########################################################
 #### CODE ################################################
@@ -89,43 +104,6 @@ for el in tree.iterfind('./*'):
 ##create pandas dataframe to hold data
 xml_df = pd.DataFrame(data)
 
-
-###########################################################
-### Convert JSON data from single file to pandas DataFrame
-###########################################################
-
-#load json file to object
-with open('./data/NarrativeData_499.json') as f:
-  data = json.load(f)
-  
-#function to extract json values and create field lists
-def extract_values(obj, key):
-    """Pull all values of specified key from nested JSON."""
-    arr = []
-
-    def extract(obj, arr, key):
-        """Recursively search for values of key in JSON tree."""
-        if isinstance(obj, dict):
-            for k, v in obj.items():
-                if isinstance(v, (dict, list)):
-                    extract(v, arr, key)
-                elif k == key:
-                    arr.append(v)
-        elif isinstance(obj, list):
-            for item in obj:
-                extract(item, arr, key)
-        return arr
-
-    results = extract(obj, arr, key)
-    return results
-
-#field lists for each set of json values
-Event_ID = extract_values(data, 'EventId')
-narrative = extract_values(data, 'narrative')
-cause = extract_values(data, 'probable_cause')
-
-#combine lists into a pandas dataframe
-json_df = pd.DataFrame(list(zip(Event_ID,narrative,cause)), columns= ["Event_ID", "Narrative", "Cause"])
 
 ###########################################################
 ### Data Cleaning

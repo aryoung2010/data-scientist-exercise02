@@ -23,6 +23,10 @@ Created on Sun Feb  2 20:29:27 2020
 #  loading datasets into pandas dataframes
 #  exploring both outcome and predictor variables 
 #
+# Outcome:
+#  The outcome of this script was to focus on the FAR Description 
+#  group of Non-US, Non-Commercial aircrafts, as they showed
+#  the highest rates of fatalities for their crashes.
 # 
 
 ############################################################

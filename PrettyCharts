@@ -1,0 +1,143 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Case Study on Non-US, Non-Commercial Flight Fatalities
+
+Created on Wed Feb  5 19:46:24 2020
+
+@author: allisonyoung
+"""
+############################################################
+#### File Summary ##########################################
+############################################################
+#
+# This script takes as inputs, 
+# 1) an XML file of data downloaded
+# from the National Transportation Safety Board's database of 
+# aviation accidents.
+# (http://www.ntsb.gov/_layouts/ntsb.aviation/index.aspx)
+# 
+#
+# Processes includes:
+#  A) loading dataset into pandas dataframes
+#  B) creating a case-study dataset of just Non-US, Non- Commercial
+#   flights, and comparing them to the full data set
+#  C) examination of helicopters as a focus group, and 
+#   identification of variables associated with fatal accidents
+#   (country, make, model, weather, etc)
+# 
+# Outcome:
+#  The outcome of this script was to focus on Brazilian 
+#  helicopter accidents,particularly those that occured in 
+#  Robinson R44 models. The final step in my analysis looks 
+#  at text recordings from Brazilian helicopter accidents.
+# 
+# 
+############################################################
+#### SUMMARY FINDINGS 
+############################################################
+#
+# Brazillian helicopter accidents resulted in 43 deaths and 
+# 19 of the 20 accidents were fatal (95%). Essentially, if a Brazilian
+# helicopter goes down, it is bad news for the passengers and they are not 
+# likely to survive. 13 of the 20 accidents were aboard Robinson helicopters,
+# and more than half of those (8) were the R44 model.
+#
+
+##########################################################
+#### CODE ################################################
+##########################################################
+## Import Files
+import json
+import pandas as pd
+import xml.etree.ElementTree as et
+import numpy as np
+import seaborn as sns #visualisation
+import matplotlib
+matplotlib.use('agg')
+import matplotlib.pyplot as plt
+
+pd.set_option('display.max_rows',500)
+pd.set_option('display.max_columns',500)
+
+
+##########################################################
+### Convert XML Data file to pandas DataFrame
+##########################################################
+
+## label file path
+path_to_xml_file = "./data/AviationData.xml"
+
+# Load xml file data
+tree = et.parse(path_to_xml_file)
+data = []
+for el in tree.iterfind('./*'):
+    for i in el.iterfind('*'):
+        data.append(dict(i.items()))
+
+##create pandas dataframe to hold data
+xml_df = pd.DataFrame(data)
+
+
+###########################################################
+### Data Cleaning
+###########################################################
+#
+
+## CAUTION!!!!!
+## CAUTION!!!!!
+## CAUTION!!!!! 
+## Assumption made here that a missing value is 0, would 
+## want to confirm by cross referencing with narratives. (if time)
+
+
+# Turn blanks to 0 for fatalities, make int
+xml_df['TotalFatalInjuries'] = xml_df['TotalFatalInjuries'].replace({'':'0'})
+xml_df['TotalFatalInjuries'] = xml_df['TotalFatalInjuries'].astype(int)
+
+
+###########################################################
+### Quantifying this population in context
+###########################################################
+
+
+xml_df["Fatality_bin"] = np.nan
+xml_df['Fatality_bin'].loc[xml_df['InjurySeverity'].str.contains("Fatal\(")==False] = "Non-Fatal"
+xml_df['Fatality_bin'].loc[xml_df['InjurySeverity'].str.contains("Fatal\(")==True] = "Fatal"
+
+xml_df["Fatality_bin"].head(15)
+mod_df =xml_df[xml_df["Fatality_bin"].notnull()]
+
+accidents = xml_df[xml_df["InvestigationType"]=="Accident"] #7420 Accidents
+nuncf = xml_df[xml_df["FARDescription"]=="Non-U.S., Non-Commercial"] #667
+## 9% of Accidents are from this group
+
+
+fatal_mod = pd.DataFrame(mod_df[mod_df["Fatality_bin"]=="Fatal"].groupby("FARDescription")['Fatality_bin'].count())
+nonfatal_mod = pd.DataFrame(mod_df[mod_df["Fatality_bin"]=="Non-Fatal"].groupby("FARDescription")['Fatality_bin'].count())
+per_fatal = fatal_mod/(fatal_mod+nonfatal_mod)
+
+print(per_fatal)
+
+per_fatal = per_fatal.sort_values(by="Fatality_bin", ascending=False).reset_index()
+
+per_fatal = per_fatal.dropna()
+
+fard =sns.catplot("Fatality_bin", "FARDescription", kind="bar", data=per_fatal)
+
+
+plt.title("Percent of Accidents resulting in Fatalities, by FAR Description")
+plt.xlabel("Number of Fatal Accidents")
+plt.ylabel("FAR Description")
+plt.xlim(0, 1)
+
+fard.savefig("FARD_chart.png")
+
+'''
+count     77257
+unique       17
+top            
+freq      60592
+Name: FARDescription, dtype: object
+'''
+
