@@ -4,3 +4,5 @@ xml
 nltk
 matplotlib
 numpy
+urllib
+plotly
